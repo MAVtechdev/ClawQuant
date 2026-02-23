@@ -3,7 +3,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/Popdogos/Quantclaw">📖 Documentation</a> · <a href="https://github.com/Popdogos/Quantclaw/blob/master/LICENSE">MIT License</a>
+  <a href="https://github.com/Cwcdino/Quantclaw">📖 Documentation</a> · <a href="https://github.com/Cwcdino/Quantclaw/blob/master/LICENSE">MIT License</a>
 </p>
 
 <h1 align="center">ClawQuant</h1>
@@ -113,7 +113,7 @@ graph LR
 ### Setup
 
 ```bash
-git clone https://github.com/Popdogos/Quantclaw.git
+git clone https://github.com/Cwcdino/Quantclaw.git
 cd Quantclaw
 pnpm install   # or: npm install
 cp .env.example .env    # then fill in your keys
@@ -258,7 +258,7 @@ To publish ClawQuant under your own account:
 git add .
 git commit -m "Initial commit: ClawQuant - AI-powered quantitative trading agent"
 git branch -M main
-git remote add origin https://github.com/Popdogos/Quantclaw.git
+git remote add origin https://github.com/Cwcdino/Quantclaw.git
 git push -u origin main
 ```
 

@@ -19,13 +19,13 @@
     "securities",
     "file-driven"
   ],
-  "author": "Popdogos",
+  "author": "Cwcdino",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Popdogos/Quantclaw.git"
+    "url": "git+https://github.com/Cwcdino/Quantclaw.git"
   },
-  "homepage": "https://github.com/Popdogos/Quantclaw",
+  "homepage": "https://github.com/Cwcdino/Quantclaw",
   "packageManager": "pnpm@10.29.2",
   "dependencies": {
     "@ai-sdk/anthropic": "^3.0.44",
