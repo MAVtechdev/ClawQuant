@@ -19,13 +19,13 @@
     "securities",
     "file-driven"
   ],
-  "author": "ClawQuant",
+  "author": "Popdogos",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/TrendsAI-bit/clawquant.git"
+    "url": "git+https://github.com/Popdogos/Quantclaw.git"
   },
-  "homepage": "https://github.com/TrendsAI-bit/clawquant",
+  "homepage": "https://github.com/Popdogos/Quantclaw",
   "packageManager": "pnpm@10.29.2",
   "dependencies": {
     "@ai-sdk/anthropic": "^3.0.44",
