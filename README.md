@@ -264,10 +264,6 @@ git push -u origin main
 
 Create the `clawquant` repository on GitHub first (empty, no README) if pushing to a different account.
 
-## Credits
-
-ClawQuant is a rebranded fork of [OpenAlice](https://github.com/TraderAlice/OpenAlice) by TraderAlice. Built with ❤️ for quant traders and developers.
-
 ## License
 
 [MIT](LICENSE)
