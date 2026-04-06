@@ -3,16 +3,18 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/Cwcdino/Quantclaw">📖 Documentation</a> · <a href="https://github.com/Cwcdino/Quantclaw/blob/master/LICENSE">MIT License</a>
+  <a href="https://github.com/MAVtechdev/ClawQuant">📖 GitHub</a> · <a href="https://github.com/MAVtechdev/ClawQuant/blob/main/LICENSE">MIT License</a>
 </p>
 
 <h1 align="center">ClawQuant</h1>
 
 <p align="center">
-  <strong>Your AI-powered quantitative trading desk</strong>
+  <strong>A self-evaluating trading agent that learns from every executed trade through replay, attribution, and gated policy promotion.</strong>
 </p>
 
 ClawQuant is a file-driven AI trading agent that gives you your own research desk, quant team, trading floor, and risk management — all running on your laptop 24/7. Built on the proven OpenAlice architecture with a quant-first, developer-friendly design.
+
+Today the codebase is **strong on runtime orchestration** (engine, providers, tools, sessions, event log, connectors). A **formal learning subsystem** — trade outcome attribution, feature logging at decision time, delayed labeling, offline replay, candidate-vs-baseline evaluation, and safe promotion to paper/live — is the architectural target, not yet first-class in `src/`. The sections below describe that target loop and layout so the product story matches the implementation roadmap.
 
 - **File-driven** — Markdown defines persona and tasks, JSON defines config, JSONL stores conversations. Both humans and AI control Claw by reading and modifying files. The same read/write primitives that power vibe coding transfer directly to vibe trading. No database, no containers, just files.
 - **Reasoning-driven** — Every trading decision is based on continuous reasoning and signal mixing. Claw reasons through market data, technical indicators, and risk parameters before executing.
@@ -29,6 +31,36 @@ ClawQuant is a file-driven AI trading agent that gives you your own research des
 - **Cron scheduling** — Event-driven cron system with AI-powered job execution and automatic delivery to the last-interacted channel
 - **Evolution mode** — Two-tier permission system. Normal mode sandboxes the AI to `data/brain/`; evolution mode gives full project access including Bash, enabling the agent to modify its own source code
 - **Web UI** — Built-in local chat interface on port 3002, no Telegram account needed
+
+## Target: learning from every trade
+
+The loop that makes “improves with every trade” an architecture (not a slogan):
+
+**observe → decide → execute → log context → wait for outcome → label → attribute → propose candidate update → replay on historical slices → compare to baseline → promote only if better and safer**
+
+Each closed trade should eventually produce a **Trade Learning Record** on disk, for example `data/learning/trades/2026-04-06T10-15-22_BTCUSDT.json`, holding fields such as: market snapshot and features at entry; prompt or reasoning summary; policy version; action and order/fill details; stops, targets, sizing; realized outcome after a defined horizon; attribution (e.g. entry quality, exit quality, regime fit, sizing fit); extracted lesson; promotion status (`promoted` | `rejected` | `queued`).
+
+**Target code layout** (evolutionary refactor from the current `src/core/` tree):
+
+| Layer | Role |
+|--------|------|
+| **Runtime** | Orchestration only: engine, providers, tools, sessions, events, connectors |
+| **Market** | Ingestion, normalization, features, indicators, regimes — what the agent knew at decision time |
+| **Strategy** | Policies, signal mixers, allocators, prompts, policy registry |
+| **Execution** | Venues, router, fills, portfolio, reconciliation vs intent |
+| **Learning** | Trade memory, labelers, reward, attribution, trainers, promotion, rollback |
+| **Research** | Replay, backtest, walk-forward, A/B or benchmark experiments, reports |
+| **Risk** | Limits, drawdown, exposure, kill-switch, approvals — visible, not only config |
+| **Observability** | Logs, metrics, audit, dashboards |
+
+**Target data layout** (alongside existing `data/config/`, `data/brain/`, etc.):
+
+```
+raw/ (market, fills, news)   features/   snapshots/
+experiments/   policies/   models/
+learning/trades/   learning/labels/   learning/lessons/
+backtests/   benchmarks/   audit/
+```
 
 ## Architecture
 
@@ -113,8 +145,8 @@ graph LR
 ### Setup
 
 ```bash
-git clone https://github.com/Cwcdino/Quantclaw.git
-cd Quantclaw
+git clone https://github.com/MAVtechdev/ClawQuant.git
+cd ClawQuant
 pnpm install   # or: npm install
 cp .env.example .env    # then fill in your keys
 ```
@@ -252,17 +284,17 @@ docs/                        # Architecture documentation
 
 ## Publishing to GitHub
 
-To publish ClawQuant under your own account:
+To publish from a fresh clone (replace the remote if yours already points [here](https://github.com/MAVtechdev/ClawQuant)):
 
 ```bash
 git add .
 git commit -m "Initial commit: ClawQuant - AI-powered quantitative trading agent"
 git branch -M main
-git remote add origin https://github.com/Cwcdino/Quantclaw.git
+git remote add origin https://github.com/MAVtechdev/ClawQuant.git
 git push -u origin main
 ```
 
-Create the `clawquant` repository on GitHub first (empty, no README) if pushing to a different account.
+Create the GitHub repository first (empty, no README) if it does not exist yet.
 
 ## License
 

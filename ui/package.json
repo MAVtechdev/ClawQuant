@@ -2,6 +2,11 @@
   "name": "claw-quant-ui",
   "private": true,
   "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MAVtechdev/ClawQuant.git",
+    "directory": "ui"
+  },
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",

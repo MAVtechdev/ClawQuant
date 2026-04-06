@@ -19,13 +19,16 @@
     "securities",
     "file-driven"
   ],
-  "author": "Cwcdino",
+  "author": "MAVtechdev",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Cwcdino/Quantclaw.git"
+    "url": "git+https://github.com/MAVtechdev/ClawQuant.git"
   },
-  "homepage": "https://github.com/Cwcdino/Quantclaw",
+  "bugs": {
+    "url": "https://github.com/MAVtechdev/ClawQuant/issues"
+  },
+  "homepage": "https://github.com/MAVtechdev/ClawQuant",
   "packageManager": "pnpm@10.29.2",
   "dependencies": {
     "@ai-sdk/anthropic": "^3.0.44",
