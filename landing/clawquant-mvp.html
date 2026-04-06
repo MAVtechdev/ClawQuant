@@ -1,0 +1,760 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="ClawQuant — A self-evaluating trading agent that learns from every executed trade. Replay. Attribution. Gated policy promotion." />
+  <title>ClawQuant — Not just trading. Evolving.</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=Outfit:wght@300;400;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg-0: #06080d;
+      --bg-1: #0c1019;
+      --bg-2: #121826;
+      --text: #e8ecf4;
+      --muted: #8892a6;
+      --crab: #ff2d3d;
+      --crab-dim: #c41e2a;
+      --cyan: #22d3ee;
+      --cyan-dim: rgba(34, 211, 238, 0.12);
+      --gold: #e8c547;
+      --border: rgba(232, 236, 244, 0.08);
+      --glow-crab: rgba(255, 45, 61, 0.45);
+      --glow-cyan: rgba(34, 211, 238, 0.25);
+      --font-sans: "Outfit", system-ui, sans-serif;
+      --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+      --radius: 14px;
+      --ease: cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: var(--font-sans);
+      background: var(--bg-0);
+      color: var(--text);
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    /* Ambient grid + noise */
+    .bg-grid {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(180deg, transparent 0%, var(--bg-0) 100%),
+        linear-gradient(90deg, rgba(34, 211, 238, 0.03) 1px, transparent 1px),
+        linear-gradient(rgba(34, 211, 238, 0.03) 1px, transparent 1px);
+      background-size: 100% 100%, 48px 48px, 48px 48px;
+      mask-image: radial-gradient(ellipse 80% 70% at 50% -10%, black 40%, transparent 75%);
+    }
+
+    .bg-orb {
+      position: fixed;
+      width: min(90vw, 720px);
+      height: min(90vw, 720px);
+      border-radius: 50%;
+      filter: blur(120px);
+      opacity: 0.35;
+      pointer-events: none;
+      z-index: 0;
+      top: -20%;
+      right: -15%;
+      background: radial-gradient(circle, var(--glow-crab) 0%, transparent 70%);
+      animation: orbFloat 18s var(--ease) infinite alternate;
+    }
+
+    .bg-orb-2 {
+      bottom: -25%;
+      left: -20%;
+      top: auto;
+      right: auto;
+      background: radial-gradient(circle, var(--glow-cyan) 0%, transparent 70%);
+      animation-delay: -6s;
+    }
+
+    @keyframes orbFloat {
+      from { transform: translate(0, 0) scale(1); }
+      to { transform: translate(-4%, 6%) scale(1.05); }
+    }
+
+    .wrap {
+      position: relative;
+      z-index: 1;
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 0 24px 120px;
+    }
+
+    header.nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 28px 0 48px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      font-size: 1.1rem;
+    }
+
+    .brand-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--crab);
+      box-shadow: 0 0 16px var(--glow-crab);
+      animation: pulse 2.4s ease-in-out infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.7; transform: scale(0.85); }
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .nav-links a {
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      text-decoration: none;
+      color: var(--muted);
+      padding: 8px 14px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      transition: color 0.2s, border-color 0.2s, background 0.2s;
+    }
+
+    .nav-links a:hover {
+      color: var(--text);
+      border-color: rgba(34, 211, 238, 0.35);
+      background: var(--cyan-dim);
+    }
+
+    /* Hero */
+    .hero {
+      padding: 56px 0 80px;
+      text-align: center;
+    }
+
+    .mascot-wrap {
+      position: relative;
+      display: inline-block;
+      margin-bottom: 36px;
+    }
+
+    .mascot-ring {
+      position: absolute;
+      inset: -12px;
+      border-radius: 28px;
+      background: linear-gradient(135deg, var(--crab), transparent 40%, var(--cyan), transparent 65%, var(--crab));
+      opacity: 0.55;
+      filter: blur(18px);
+      z-index: 0;
+      animation: ringRotate 10s linear infinite;
+    }
+
+    @keyframes ringRotate {
+      to { transform: rotate(360deg); }
+    }
+
+    .mascot-inner {
+      position: relative;
+      z-index: 1;
+      padding: 20px 28px;
+      border-radius: 24px;
+      background: linear-gradient(165deg, rgba(18, 24, 38, 0.95), rgba(6, 8, 13, 0.98));
+      border: 1px solid rgba(255, 45, 61, 0.25);
+      box-shadow:
+        0 0 0 1px rgba(34, 211, 238, 0.06) inset,
+        0 24px 80px rgba(0, 0, 0, 0.55),
+        0 0 60px var(--glow-crab);
+      animation: mascotFloat 6s var(--ease) infinite alternate;
+    }
+
+    @keyframes mascotFloat {
+      from { transform: translateY(0); }
+      to { transform: translateY(-10px); }
+    }
+
+    .mascot-inner img {
+      width: min(200px, 42vw);
+      height: auto;
+      display: block;
+      filter: drop-shadow(0 0 24px rgba(255, 45, 61, 0.35));
+    }
+
+    .eyebrow {
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--cyan);
+      margin-bottom: 16px;
+      opacity: 0.95;
+    }
+
+    h1 {
+      font-size: clamp(2.1rem, 5.5vw, 3.45rem);
+      font-weight: 800;
+      letter-spacing: -0.035em;
+      line-height: 1.08;
+      max-width: 900px;
+      margin: 0 auto 20px;
+      background: linear-gradient(120deg, var(--text) 0%, #b8c4d9 45%, var(--cyan) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .hero-sub {
+      font-size: 1.15rem;
+      color: var(--muted);
+      max-width: 640px;
+      margin: 0 auto 32px;
+      font-weight: 400;
+    }
+
+    .tagline-core {
+      font-size: clamp(1.35rem, 3.2vw, 1.85rem);
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 36px;
+      letter-spacing: -0.02em;
+    }
+
+    .tagline-core span {
+      color: var(--crab);
+      text-shadow: 0 0 40px var(--glow-crab);
+    }
+
+    .cta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .btn {
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      font-weight: 600;
+      padding: 14px 24px;
+      border-radius: 10px;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: transform 0.2s var(--ease), box-shadow 0.2s;
+      border: none;
+      cursor: pointer;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--crab), var(--crab-dim));
+      color: white;
+      box-shadow: 0 12px 40px rgba(255, 45, 61, 0.35);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 16px 48px rgba(255, 45, 61, 0.45);
+    }
+
+    .btn-ghost {
+      background: rgba(232, 236, 244, 0.04);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .btn-ghost:hover {
+      border-color: rgba(34, 211, 238, 0.4);
+      background: var(--cyan-dim);
+    }
+
+    /* Sections */
+    section {
+      padding: 72px 0;
+      border-top: 1px solid var(--border);
+    }
+
+    section h2 {
+      font-size: 1.65rem;
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      margin-bottom: 12px;
+    }
+
+    .section-lead {
+      color: var(--muted);
+      max-width: 720px;
+      margin-bottom: 40px;
+      font-size: 1.05rem;
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.7s var(--ease), transform 0.7s var(--ease);
+    }
+
+    .reveal.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    /* Learning loop */
+    .loop {
+      display: grid;
+      gap: 16px;
+    }
+
+    @media (min-width: 900px) {
+      .loop {
+        grid-template-columns: repeat(5, 1fr);
+        align-items: stretch;
+      }
+    }
+
+    .loop-step {
+      background: var(--bg-1);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 22px 18px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .loop-step::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--crab), var(--cyan));
+      opacity: 0.8;
+    }
+
+    .loop-step .num {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--cyan);
+      margin-bottom: 10px;
+      letter-spacing: 0.08em;
+    }
+
+    .loop-step h3 {
+      font-size: 0.98rem;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+
+    .loop-step p {
+      font-size: 0.82rem;
+      color: var(--muted);
+      line-height: 1.55;
+    }
+
+    /* Architecture cards */
+    .arch-grid {
+      display: grid;
+      gap: 20px;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    }
+
+    .arch-card {
+      border-radius: var(--radius);
+      padding: 28px 24px;
+      border: 1px solid var(--border);
+      background: linear-gradient(160deg, var(--bg-1), var(--bg-2));
+      position: relative;
+    }
+
+    .arch-card .lang {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      margin-bottom: 14px;
+      display: inline-block;
+      padding: 6px 10px;
+      border-radius: 6px;
+      background: rgba(34, 211, 238, 0.1);
+      color: var(--cyan);
+    }
+
+    .arch-card.ts .lang { background: rgba(34, 211, 238, 0.12); color: #5eead4; }
+    .arch-card.py .lang { background: rgba(232, 197, 71, 0.12); color: var(--gold); }
+    .arch-card.rust .lang { background: rgba(255, 45, 61, 0.12); color: #ff6b76; }
+
+    .arch-card h3 {
+      font-size: 1.15rem;
+      margin-bottom: 12px;
+    }
+
+    .arch-card ul {
+      list-style: none;
+      font-size: 0.88rem;
+      color: var(--muted);
+    }
+
+    .arch-card li {
+      padding: 6px 0;
+      padding-left: 18px;
+      position: relative;
+    }
+
+    .arch-card li::before {
+      content: "▹";
+      position: absolute;
+      left: 0;
+      color: var(--crab);
+      font-size: 0.75rem;
+    }
+
+    .trinity {
+      text-align: center;
+      font-family: var(--font-mono);
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: var(--text);
+      margin-top: 32px;
+      padding: 20px;
+      border-radius: var(--radius);
+      border: 1px dashed rgba(34, 211, 238, 0.25);
+      background: rgba(12, 16, 25, 0.6);
+    }
+
+    .trinity strong {
+      color: var(--cyan);
+    }
+
+    /* Features */
+    .feat-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 18px;
+    }
+
+    .feat {
+      padding: 22px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border);
+      background: var(--bg-1);
+    }
+
+    .feat h3 {
+      font-size: 1rem;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .feat h3::before {
+      content: "";
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: var(--crab);
+      box-shadow: 0 0 12px var(--glow-crab);
+    }
+
+    .feat p {
+      font-size: 0.88rem;
+      color: var(--muted);
+    }
+
+    /* Repo structure */
+    .code-block {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      line-height: 1.65;
+      background: #05070b;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      overflow-x: auto;
+      color: #9fb0c8;
+    }
+
+    .code-block .dir { color: var(--cyan); }
+    .code-block .cmt { color: #5c6573; }
+
+    /* Vision */
+    .vision {
+      text-align: center;
+      padding: 80px 24px;
+      border-radius: 20px;
+      background: radial-gradient(ellipse at 50% 0%, rgba(255, 45, 61, 0.1), transparent 55%),
+        linear-gradient(180deg, var(--bg-1), var(--bg-0));
+      border: 1px solid var(--border);
+    }
+
+    .vision blockquote {
+      font-size: clamp(1.2rem, 2.8vw, 1.55rem);
+      font-weight: 600;
+      font-style: italic;
+      color: var(--text);
+      max-width: 760px;
+      margin: 0 auto 20px;
+      line-height: 1.45;
+    }
+
+    .vision .attrib {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    /* Final CTA */
+    .final-cta {
+      text-align: center;
+      padding: 80px 0 40px;
+      border-top: none;
+    }
+
+    .final-cta h2 {
+      font-size: 1.9rem;
+      margin-bottom: 16px;
+    }
+
+    .final-cta p {
+      color: var(--muted);
+      margin-bottom: 28px;
+      max-width: 520px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    footer {
+      text-align: center;
+      padding: 40px 0 24px;
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: #5c6573;
+      border-top: 1px solid var(--border);
+    }
+
+    footer a {
+      color: var(--muted);
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-grid" aria-hidden="true"></div>
+  <div class="bg-orb" aria-hidden="true"></div>
+  <div class="bg-orb bg-orb-2" aria-hidden="true"></div>
+
+  <div class="wrap">
+    <header class="nav">
+      <div class="brand">
+        <span class="brand-dot" aria-hidden="true"></span>
+        ClawQuant
+      </div>
+      <nav class="nav-links" aria-label="Social">
+        <a href="https://github.com/MAVtechdev/ClawQuant" target="_blank" rel="noopener noreferrer">GitHub</a>
+        <a href="https://x.com/Maverickm376220" target="_blank" rel="noopener noreferrer">X</a>
+      </nav>
+    </header>
+
+    <section class="hero" id="top">
+      <p class="eyebrow">AI-native quant lab</p>
+      <div class="mascot-wrap">
+        <div class="mascot-ring" aria-hidden="true"></div>
+        <div class="mascot-inner">
+          <img
+            src="https://raw.githubusercontent.com/MAVtechdev/ClawQuant/main/logo.png"
+            alt="ClawQuant mascot — minimalist figure with red crab headband"
+            width="200"
+            height="200"
+          />
+        </div>
+      </div>
+      <h1>A self-evaluating trading agent that learns from every executed trade.</h1>
+      <p class="hero-sub">Replay. Attribution. Gated policy promotion. Quant-first. File-driven. Always learning.</p>
+      <p class="tagline-core">Not just trading. <span>Evolving.</span></p>
+      <div class="cta-row">
+        <a class="btn btn-primary" href="https://github.com/MAVtechdev/ClawQuant" target="_blank" rel="noopener noreferrer">View on GitHub</a>
+        <a class="btn btn-ghost" href="https://x.com/Maverickm376220" target="_blank" rel="noopener noreferrer">Follow on X</a>
+      </div>
+    </section>
+
+    <section class="reveal" id="loop">
+      <h2>Learning loop</h2>
+      <p class="section-lead">Every closed trade feeds a closed loop: observe, attribute, benchmark, and promote only what survives replay.</p>
+      <div class="loop">
+        <div class="loop-step">
+          <div class="num">01</div>
+          <h3>Observe</h3>
+          <p>Capture market context, features, and policy version at decision time.</p>
+        </div>
+        <div class="loop-step">
+          <div class="num">02</div>
+          <h3>Execute &amp; log</h3>
+          <p>Orders, fills, risk envelope — immutable record for later labeling.</p>
+        </div>
+        <div class="loop-step">
+          <div class="num">03</div>
+          <h3>Label &amp; attribute</h3>
+          <p>Delayed outcomes, horizon returns, entry / exit / regime / sizing fit.</p>
+        </div>
+        <div class="loop-step">
+          <div class="num">04</div>
+          <h3>Replay &amp; benchmark</h3>
+          <p>Historical slices, walk-forward framing — candidate vs baseline.</p>
+        </div>
+        <div class="loop-step">
+          <div class="num">05</div>
+          <h3>Promote</h3>
+          <p>Gated policy promotion — only if better <em>and</em> safer.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="reveal" id="architecture">
+      <h2>Architecture</h2>
+      <p class="section-lead">TS runs the system. Python learns. Rust accelerates. One product story, three execution surfaces.</p>
+      <div class="arch-grid">
+        <article class="arch-card ts">
+          <span class="lang">TypeScript</span>
+          <h3>Live runtime</h3>
+          <ul>
+            <li>Agent orchestration &amp; tool routing</li>
+            <li>Web UI, Telegram, HTTP, MCP</li>
+            <li>Exchange &amp; broker integrations</li>
+            <li>File-driven config &amp; sessions</li>
+          </ul>
+        </article>
+        <article class="arch-card py">
+          <span class="lang">Python</span>
+          <h3>Research brain</h3>
+          <ul>
+            <li>Backtests &amp; benchmarks</li>
+            <li>Trade labeling &amp; attribution</li>
+            <li>Experiments &amp; reports</li>
+            <li>Self-evaluation pipelines</li>
+          </ul>
+        </article>
+        <article class="arch-card rust">
+          <span class="lang">Rust</span>
+          <h3>Speed core</h3>
+          <ul>
+            <li>Technical indicator engine</li>
+            <li>Causal candle replay</li>
+            <li>Room for tick / portfolio kernels</li>
+            <li>Performance where it counts</li>
+          </ul>
+        </article>
+      </div>
+      <p class="trinity"><strong>TS</strong> runs the system. <strong>Python</strong> learns. <strong>Rust</strong> accelerates.</p>
+    </section>
+
+    <section class="reveal" id="features">
+      <h2>Features</h2>
+      <p class="section-lead">Serious infrastructure for builders who want AI in the loop without leaving quant discipline behind.</p>
+      <div class="feat-grid">
+        <div class="feat">
+          <h3>Dual AI provider</h3>
+          <p>Claude Code CLI or Vercel AI SDK — switch at runtime without restarting the desk.</p>
+        </div>
+        <div class="feat">
+          <h3>Crypto &amp; equities</h3>
+          <p>CCXT and Alpaca paths with git-like wallet workflows for staged execution.</p>
+        </div>
+        <div class="feat">
+          <h3>Market intelligence</h3>
+          <p>OpenBB-backed layers, analysis kit, and room for Rust-accelerated indicators.</p>
+        </div>
+        <div class="feat">
+          <h3>Event log &amp; cron</h3>
+          <p>Durable JSONL events, scheduled jobs, heartbeat — operations that survive restarts.</p>
+        </div>
+        <div class="feat">
+          <h3>File-driven everything</h3>
+          <p>Markdown persona, JSON config, JSONL sessions — humans and agents read the same truth.</p>
+        </div>
+        <div class="feat">
+          <h3>Evolution mode</h3>
+          <p>Sandboxed brain vs full project access — explicit permission for self-modifying agents.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="reveal" id="repo">
+      <h2>Repo structure</h2>
+      <p class="section-lead">Multi-language layout you can deploy, fork, and extend — not a monolith masquerading as research.</p>
+      <pre class="code-block"><span class="cmt"># ClawQuant — high level</span>
+<span class="dir">src/</span>                 <span class="cmt"># TypeScript agent runtime</span>
+<span class="dir">ui/</span>                  <span class="cmt"># Web UI</span>
+<span class="dir">python/claw_quant/</span>   <span class="cmt"># Research, labeling, benchmarks</span>
+<span class="dir">rust/</span>                <span class="cmt"># indicator-engine, replay-core</span>
+<span class="dir">packages/schemas-ts/</span> <span class="cmt"># Shared artifacts (e.g. trade learning records)</span>
+<span class="dir">data/</span>                <span class="cmt"># Config, sessions, future learning/*</span>
+<span class="dir">docs/</span>                <span class="cmt"># Architecture notes</span></pre>
+    </section>
+
+    <section class="reveal vision" id="vision">
+      <blockquote>“The edge isn’t a single model — it’s the loop: replay what you did, attribute what worked, and promote only what proves out under scrutiny.”</blockquote>
+      <p class="attrib">Vision — ClawQuant</p>
+    </section>
+
+    <section class="final-cta reveal" id="cta">
+      <h2>Ship the loop.</h2>
+      <p>Star the repo, run the agent, and wire your first trade learning record. Elite quant lab meets AI-native execution.</p>
+      <div class="cta-row">
+        <a class="btn btn-primary" href="https://github.com/MAVtechdev/ClawQuant" target="_blank" rel="noopener noreferrer">github.com/MAVtechdev/ClawQuant</a>
+        <a class="btn btn-ghost" href="https://x.com/Maverickm376220" target="_blank" rel="noopener noreferrer">@Maverickm376220</a>
+      </div>
+    </section>
+
+    <footer>
+      <p>ClawQuant · <a href="https://github.com/MAVtechdev/ClawQuant">GitHub</a> · <a href="https://x.com/Maverickm376220">X</a></p>
+      <p style="margin-top:8px">MIT License · Not financial advice.</p>
+    </footer>
+  </div>
+
+  <script>
+    (function () {
+      var sections = document.querySelectorAll(".reveal");
+      if (!("IntersectionObserver" in window)) {
+        sections.forEach(function (s) { s.classList.add("visible"); });
+        return;
+      }
+      var io = new IntersectionObserver(
+        function (entries) {
+          entries.forEach(function (e) {
+            if (e.isIntersecting) e.target.classList.add("visible");
+          });
+        },
+        { threshold: 0.12, rootMargin: "0px 0px -8% 0px" }
+      );
+      sections.forEach(function (s) { io.observe(s); });
+    })();
+  </script>
+</body>
+</html>
