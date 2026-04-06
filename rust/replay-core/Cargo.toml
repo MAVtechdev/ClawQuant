@@ -1,0 +1,13 @@
+[package]
+name = "clawquant-replay-core"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Fast candle replay over ClawQuant indicator-engine"
+
+[dependencies]
+clawquant-indicator-engine = { path = "../indicator-engine" }
+
+[lib]
+path = "src/lib.rs"

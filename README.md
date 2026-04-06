@@ -14,7 +14,13 @@
 
 ClawQuant is a file-driven AI trading agent that gives you your own research desk, quant team, trading floor, and risk management — all running on your laptop 24/7. The architecture is **original to this project**: a quant-first, developer-friendly composition of engine, tools, and connectors (not a third-party application framework).
 
-**Implementation language:** The runtime is **[TypeScript on Node.js](https://nodejs.org/)** — a practical fit for the [Vercel AI SDK](https://sdk.vercel.ai/docs), web connectors (Hono), and the existing JS ecosystem ([CCXT](https://docs.ccxt.com/), Alpaca). Research-heavy quant stacks often add **Python** for backtests and feature pipelines; that can complement this repo later without replacing the whole agent loop in one shot.
+**Multi-language architecture:** ClawQuant uses **[TypeScript](https://www.typescriptlang.org/)** for live agent orchestration and execution, **[Python](https://www.python.org/)** for research and self-evaluation pipelines (backtests, labeling, benchmarks), and **[Rust](https://www.rust-lang.org/)** for performance-critical quantitative engines (indicators, candle replay). Details: [docs/architecture/multi-language.md](docs/architecture/multi-language.md).
+
+| Layer | Language | Role |
+|--------|-----------|------|
+| Agent runtime, tools, connectors, UI, config | TypeScript (`src/`, `ui/`, `packages/schemas-ts`) | Runs the system |
+| Backtests, labeling, attribution, benchmarks | Python (`python/claw_quant/`) | Learns and evaluates |
+| Indicators, replay kernels | Rust (`rust/`) | Accelerates math-heavy paths |
 
 Today the codebase is **strong on runtime orchestration** (engine, providers, tools, sessions, event log, connectors). A **formal learning subsystem** — trade outcome attribution, feature logging at decision time, delayed labeling, offline replay, candidate-vs-baseline evaluation, and safe promotion to paper/live — is the architectural target, not yet first-class in `src/`. The sections below describe that target loop and layout so the product story matches the implementation roadmap.
 
@@ -189,6 +195,24 @@ pnpm build      # production build (backend + UI)
 pnpm test       # run tests
 ```
 
+### Python (research & learning)
+
+```bash
+cd python
+python -m venv .venv && source .venv/bin/activate   # Windows: .venv\Scripts\activate
+pip install -e ".[dev]"
+pytest
+```
+
+### Rust (indicators & replay)
+
+Requires [Rust toolchain](https://rustup.rs/):
+
+```bash
+cd rust
+cargo test --workspace
+```
+
 ### Web UI
 
 The backend (port 3002) serves both the API and the built frontend from `dist/ui/`. During development, run `pnpm dev:ui` to start Vite's dev server on port 5173, which proxies API requests to port 3002 and provides hot module replacement.
@@ -281,7 +305,17 @@ data/
   securities-trading/        # Securities wallet commit history
   cron/                      # Cron job definitions (jobs.json)
   event-log/                 # Persistent event log (events.jsonl)
-docs/                        # Architecture documentation
+python/
+  claw_quant/                # Research, learning, benchmarks (pip install -e python)
+    research/              # backtests, replays, benchmarks
+    learning/                # labelers, attribution
+rust/
+  indicator-engine/          # SMA, EMA, RSI, MACD, ATR, rolling volatility
+  replay-core/               # Causal candle replay + indicator snapshots
+packages/
+  schemas-ts/                # Shared Zod schemas (e.g. trade learning record)
+docs/
+  architecture/              # Multi-language and subsystem docs
 ```
 
 ## Publishing to GitHub

@@ -1,0 +1,13 @@
+[package]
+name = "clawquant-indicator-engine"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+description = "Performance-oriented technical indicators for ClawQuant (SMA, EMA, RSI, MACD, ATR, rolling volatility)"
+
+[lib]
+path = "src/lib.rs"
+
+[dev-dependencies]
+approx = "0.5"
