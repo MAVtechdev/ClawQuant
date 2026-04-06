@@ -1,4 +1,4 @@
-import type { OpenClawConfig } from "../../config/config.js";
+import type { ClawBrowserRootConfig } from "../../config/config.js";
 import type {
   SandboxBrowserConfig,
   SandboxConfig,
@@ -143,7 +143,7 @@ export function resolveSandboxPruneConfig(params: {
 }
 
 export function resolveSandboxConfigForAgent(
-  cfg?: OpenClawConfig,
+  cfg?: ClawBrowserRootConfig,
   agentId?: string,
 ): SandboxConfig {
   const agent = cfg?.agents?.defaults?.sandbox;

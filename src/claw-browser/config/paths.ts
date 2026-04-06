@@ -1,8 +1,26 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import type { OpenClawConfig } from "./types.js";
+import type { ClawBrowserRootConfig } from "./types.js";
 import { expandHomePrefix, resolveRequiredHomeDir } from "../infra/home-dir.js";
+
+/** State dir override: supports ClawQuant-branded env vars alongside legacy names. */
+export function resolveStateDirEnvOverride(env: NodeJS.ProcessEnv = process.env): string | undefined {
+  return (
+    env.OPENCLAW_STATE_DIR?.trim() ||
+    env.CLAWDBOT_STATE_DIR?.trim() ||
+    env.CLAWQUANT_STATE_DIR?.trim()
+  );
+}
+
+/** Config file path override. */
+export function resolveConfigPathEnvOverride(env: NodeJS.ProcessEnv = process.env): string | undefined {
+  return (
+    env.OPENCLAW_CONFIG_PATH?.trim() ||
+    env.CLAWDBOT_CONFIG_PATH?.trim() ||
+    env.CLAWQUANT_CONFIG_PATH?.trim()
+  );
+}
 
 /**
  * Nix mode detection: When OPENCLAW_NIX_MODE=1, the gateway is running under Nix.
@@ -54,15 +72,15 @@ export function resolveNewStateDir(homedir: () => string = resolveDefaultHomeDir
 
 /**
  * State directory for mutable data (sessions, logs, caches).
- * Can be overridden via OPENCLAW_STATE_DIR.
- * Default: ~/.openclaw
+ * Can be overridden via OPENCLAW_STATE_DIR, CLAWDBOT_STATE_DIR, or CLAWQUANT_STATE_DIR.
+ * Default: ~/.openclaw (legacy dirname; unchanged for existing installs)
  */
 export function resolveStateDir(
   env: NodeJS.ProcessEnv = process.env,
   homedir: () => string = envHomedir(env),
 ): string {
   const effectiveHomedir = () => resolveRequiredHomeDir(env, homedir);
-  const override = env.OPENCLAW_STATE_DIR?.trim() || env.CLAWDBOT_STATE_DIR?.trim();
+  const override = resolveStateDirEnvOverride(env);
   if (override) {
     return resolveUserPath(override, env, effectiveHomedir);
   }
@@ -109,14 +127,14 @@ export const STATE_DIR = resolveStateDir();
 
 /**
  * Config file path (JSON5).
- * Can be overridden via OPENCLAW_CONFIG_PATH.
+ * Can be overridden via OPENCLAW_CONFIG_PATH, CLAWDBOT_CONFIG_PATH, or CLAWQUANT_CONFIG_PATH.
  * Default: ~/.openclaw/openclaw.json (or $OPENCLAW_STATE_DIR/openclaw.json)
  */
 export function resolveCanonicalConfigPath(
   env: NodeJS.ProcessEnv = process.env,
   stateDir: string = resolveStateDir(env, envHomedir(env)),
 ): string {
-  const override = env.OPENCLAW_CONFIG_PATH?.trim() || env.CLAWDBOT_CONFIG_PATH?.trim();
+  const override = resolveConfigPathEnvOverride(env);
   if (override) {
     return resolveUserPath(override, env, envHomedir(env));
   }
@@ -153,11 +171,11 @@ export function resolveConfigPath(
   stateDir: string = resolveStateDir(env, envHomedir(env)),
   homedir: () => string = envHomedir(env),
 ): string {
-  const override = env.OPENCLAW_CONFIG_PATH?.trim();
+  const override = resolveConfigPathEnvOverride(env);
   if (override) {
     return resolveUserPath(override, env, homedir);
   }
-  const stateOverride = env.OPENCLAW_STATE_DIR?.trim();
+  const stateOverride = resolveStateDirEnvOverride(env);
   const candidates = [
     path.join(stateDir, CONFIG_FILENAME),
     ...LEGACY_CONFIG_FILENAMES.map((name) => path.join(stateDir, name)),
@@ -193,13 +211,13 @@ export function resolveDefaultConfigCandidates(
   homedir: () => string = envHomedir(env),
 ): string[] {
   const effectiveHomedir = () => resolveRequiredHomeDir(env, homedir);
-  const explicit = env.OPENCLAW_CONFIG_PATH?.trim() || env.CLAWDBOT_CONFIG_PATH?.trim();
+  const explicit = resolveConfigPathEnvOverride(env);
   if (explicit) {
     return [resolveUserPath(explicit, env, effectiveHomedir)];
   }
 
   const candidates: string[] = [];
-  const openclawStateDir = env.OPENCLAW_STATE_DIR?.trim() || env.CLAWDBOT_STATE_DIR?.trim();
+  const openclawStateDir = resolveStateDirEnvOverride(env);
   if (openclawStateDir) {
     const resolved = resolveUserPath(openclawStateDir, env, effectiveHomedir);
     candidates.push(path.join(resolved, CONFIG_FILENAME));
@@ -255,7 +273,7 @@ export function resolveOAuthPath(
 }
 
 export function resolveGatewayPort(
-  cfg?: OpenClawConfig,
+  cfg?: ClawBrowserRootConfig,
   env: NodeJS.ProcessEnv = process.env,
 ): number {
   const envRaw = env.OPENCLAW_GATEWAY_PORT?.trim() || env.CLAWDBOT_GATEWAY_PORT?.trim();

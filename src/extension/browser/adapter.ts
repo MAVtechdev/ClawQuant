@@ -1,11 +1,10 @@
 /**
  * Browser extension adapter
  *
- * Bridges the OpenClaw browser tool (pi-agent-core format) into the Vercel AI
- * SDK tool format used by Little-Pony. This is the only new code — everything
- * underneath is the original OpenClaw browser subsystem, copied verbatim.
+ * Bridges the ClawQuant embedded browser tool (pi-agent-core format) into the Vercel AI
+ * SDK tool format. The implementation lives under `src/claw-browser/`.
  *
- * The OpenClaw browser tool returns:
+ * The browser tool returns:
  *   { content: [{type:"text", text: "..."}, {type:"image", data, mimeType}], details: {...} }
  *
  * The Vercel AI SDK expects the execute() to return an arbitrary value that
@@ -14,10 +13,10 @@
  */
 import { tool, type Tool } from "ai";
 import { z } from "zod";
-import { createBrowserTool } from "../../openclaw/agents/tools/browser-tool.js";
+import { createBrowserTool } from "../../claw-browser/agents/tools/browser-tool.js";
 
 // ── Zod schema mirroring BrowserToolSchema (TypeBox) ──────────────────
-// Kept in sync with openclaw/agents/tools/browser-tool.schema.ts.
+// Kept in sync with claw-browser/agents/tools/browser-tool.schema.ts.
 // Flat object (no unions/anyOf) — same design choice as upstream,
 // because Claude API on Vertex AI rejects nested anyOf.
 

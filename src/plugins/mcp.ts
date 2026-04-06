@@ -13,7 +13,7 @@ type McpContent =
 /**
  * Convert a tool result to MCP content blocks.
  *
- * If the result has a `.content` array (OpenClaw AgentToolResult format),
+ * If the result has a `.content` array (browser / tool rich result format),
  * map each item to native MCP text/image blocks. This avoids stringify-ing
  * base64 image data into a giant JSON text blob.
  *

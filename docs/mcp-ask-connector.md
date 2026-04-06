@@ -12,7 +12,7 @@ External agents can converse with Claw via a dedicated MCP server, without reduc
 ## Architecture
 
 ```
-External Agent (OpenClaw, etc.)
+External Agent (any MCP client, e.g. another orchestration agent)
     │
     │  MCP protocol (Streamable HTTP)
     │  Port: askMcpPort (e.g. 3003)
@@ -147,19 +147,19 @@ data/
     mcp-ask__*.jsonl        # Per-session conversation history
 ```
 
-## Example: OpenClaw Integration
+## Example: external orchestrator
 
-An orchestration agent like OpenClaw can use the Ask connector to delegate trading decisions to Claw:
+An orchestration agent can use the Ask connector to delegate trading decisions to Claw:
 
 ```
-User → OpenClaw: "Should I buy more ETH?"
+User → Orchestrator: "Should I buy more ETH?"
          │
          │  askWithSession({ message: "The user is asking about ETH. Current price is $3,200. What's your view?", sessionId: "user-123" })
          ▼
        Claw: "Based on the 4h RSI at 42 and declining volume, I'd wait for a pullback to $3,050 support..."
          │
          ▼
-OpenClaw → User: "Claw suggests waiting for $3,050 support before adding. RSI is at 42 with declining volume."
+Orchestrator → User: "Claw suggests waiting for $3,050 support before adding. RSI is at 42 with declining volume."
 ```
 
 Claw processes the question using its full toolkit (market data, indicators, position context, memory) and responds as an autonomous agent — not as a function returning a value.

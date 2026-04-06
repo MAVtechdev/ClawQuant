@@ -10,8 +10,8 @@
 export * from "./types.browser.js";
 export * from "./types.gateway.js";
 
-// OpenClawConfig — the root config type. In the original codebase this is a
+// ClawBrowserRootConfig — the root config type. In the original codebase this is a
 // massive Zod-validated type built from all types.*.ts files. We provide a
 // permissive type alias so the browser subsystem can access arbitrary config
 // paths without pulling in the full schema.
-export type OpenClawConfig = Record<string, any>;
+export type ClawBrowserRootConfig = Record<string, any>;

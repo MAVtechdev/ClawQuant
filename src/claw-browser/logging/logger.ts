@@ -2,7 +2,7 @@ import fs from "node:fs";
 import { createRequire } from "node:module";
 import path from "node:path";
 import { Logger as TsLogger } from "tslog";
-import type { OpenClawConfig } from "../config/types.js";
+import type { ClawBrowserRootConfig } from "../config/types.js";
 import type { ConsoleStyle } from "./console.js";
 import { resolvePreferredOpenClawTmpDir } from "../infra/tmp-openclaw-dir.js";
 import { readLoggingConfig } from "./config.js";
@@ -51,12 +51,12 @@ function attachExternalTransport(logger: TsLogger<LogObj>, transport: LogTranspo
 }
 
 function resolveSettings(): ResolvedSettings {
-  let cfg: OpenClawConfig["logging"] | undefined =
+  let cfg: ClawBrowserRootConfig["logging"] | undefined =
     (loggingState.overrideSettings as LoggerSettings | null) ?? readLoggingConfig();
   if (!cfg) {
     try {
       const loaded = requireConfig("../config/config.js") as {
-        loadConfig?: () => OpenClawConfig;
+        loadConfig?: () => ClawBrowserRootConfig;
       };
       cfg = loaded.loadConfig?.().logging;
     } catch {

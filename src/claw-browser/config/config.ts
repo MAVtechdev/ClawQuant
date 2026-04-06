@@ -25,7 +25,7 @@ export {
 } from "./port-defaults.js";
 
 // --- Type re-exports ---
-export type { OpenClawConfig } from "./types.js";
+export type { ClawBrowserRootConfig } from "./types.js";
 export type { BrowserConfig, BrowserProfileConfig } from "./types.browser.js";
 // Re-export ALL gateway types — gateway/*.ts imports many of them through this barrel
 export type {
@@ -45,11 +45,11 @@ export type {
 import { readFileSync, existsSync } from "node:fs";
 import { resolve } from "node:path";
 import { resolveStateDir } from "./paths.js";
-import type { OpenClawConfig } from "./types.js";
+import type { ClawBrowserRootConfig } from "./types.js";
 
-let _cachedConfig: OpenClawConfig | null = null;
+let _cachedConfig: ClawBrowserRootConfig | null = null;
 
-export function loadConfig(): OpenClawConfig {
+export function loadConfig(): ClawBrowserRootConfig {
   if (_cachedConfig) return _cachedConfig;
   const configPath = resolve(resolveStateDir(), "config.json");
   if (!existsSync(configPath)) {
@@ -58,20 +58,20 @@ export function loadConfig(): OpenClawConfig {
     // to connect ws://127.0.0.1:18789 (the OpenClaw Gateway).
     _cachedConfig = {
       gateway: { nodes: { browser: { mode: "off" } } },
-    } as OpenClawConfig;
+    } as ClawBrowserRootConfig;
     return _cachedConfig;
   }
   try {
-    _cachedConfig = JSON.parse(readFileSync(configPath, "utf-8")) as OpenClawConfig;
+    _cachedConfig = JSON.parse(readFileSync(configPath, "utf-8")) as ClawBrowserRootConfig;
   } catch {
     _cachedConfig = {
       gateway: { nodes: { browser: { mode: "off" } } },
-    } as OpenClawConfig;
+    } as ClawBrowserRootConfig;
   }
   return _cachedConfig;
 }
 
-export function writeConfigFile(_config: OpenClawConfig): void {
+export function writeConfigFile(_config: ClawBrowserRootConfig): void {
   // Stub — implement when config persistence is needed
 }
 

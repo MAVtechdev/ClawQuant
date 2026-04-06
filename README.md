@@ -12,7 +12,9 @@
   <strong>A self-evaluating trading agent that learns from every executed trade through replay, attribution, and gated policy promotion.</strong>
 </p>
 
-ClawQuant is a file-driven AI trading agent that gives you your own research desk, quant team, trading floor, and risk management — all running on your laptop 24/7. Built on the proven OpenAlice architecture with a quant-first, developer-friendly design.
+ClawQuant is a file-driven AI trading agent that gives you your own research desk, quant team, trading floor, and risk management — all running on your laptop 24/7. The architecture is **original to this project**: a quant-first, developer-friendly composition of engine, tools, and connectors (not a third-party application framework).
+
+**Implementation language:** The runtime is **[TypeScript on Node.js](https://nodejs.org/)** — a practical fit for the [Vercel AI SDK](https://sdk.vercel.ai/docs), web connectors (Hono), and the existing JS ecosystem ([CCXT](https://docs.ccxt.com/), Alpaca). Research-heavy quant stacks often add **Python** for backtests and feature pipelines; that can complement this repo later without replacing the whole agent loop in one shot.
 
 Today the codebase is **strong on runtime orchestration** (engine, providers, tools, sessions, event log, connectors). A **formal learning subsystem** — trade outcome attribution, feature logging at decision time, delayed labeling, offline replay, candidate-vs-baseline evaluation, and safe promotion to paper/live — is the architectural target, not yet first-class in `src/`. The sections below describe that target loop and layout so the product story matches the implementation roadmap.
 
@@ -253,7 +255,7 @@ src/
     securities-trading/      # Alpaca integration, wallet, tools
     thinking-kit/            # Reasoning and calculation tools
     brain/                   # Cognitive state (memory, emotion)
-    browser/                 # Browser automation bridge (via OpenClaw)
+    browser/                 # Browser automation bridge (embedded claw-browser)
   openbb/
     equity/                  # OpenBB equity data layer (price, fundamentals, estimates, etc.)
     crypto/                  # OpenBB crypto data layer
@@ -269,7 +271,7 @@ src/
   plugins/
     http.ts                  # HTTP health/status endpoint
     mcp.ts                   # MCP server for tool exposure
-  openclaw/                  # Browser automation subsystem (frozen)
+  claw-browser/              # Embedded browser control + gateway helpers (legacy paths: ~/.openclaw)
 data/
   config/                    # JSON configuration files
   default/                   # Factory defaults (persona, heartbeat prompts)

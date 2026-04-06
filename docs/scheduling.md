@@ -1,6 +1,6 @@
 # Scheduling Subsystem
 
-ClawQuant's scheduling subsystem, designed from OpenClaw's heartbeat/cron/delivery architecture with a clean-room implementation.
+ClawQuant's scheduling subsystem: heartbeat, cron, and delivery in a clean-room design (dual-trigger pattern common to local agent runtimes).
 
 ## Design Philosophy
 
@@ -419,7 +419,7 @@ npx vitest run src/core/*.spec.ts
 ClawQuant is a single-process application and doesn't need a Redis-backed distributed task queue. Agent Events (84-line EventEmitter) + file persistence already meets the requirements.
 
 ### Why do heartbeat and cron share the scheduler?
-OpenClaw's design: two independent trigger lines (cron timer + heartbeat interval) ultimately converge on the same execution entry point. Sharing the scheduler naturally supports wake coalescing — cron and heartbeat within the same 250ms window execute only once.
+Here, two independent trigger lines (cron timer + heartbeat interval) converge on the same execution entry point. Sharing the scheduler naturally supports wake coalescing — cron and heartbeat within the same 250ms window execute only once.
 
 ### Why does cron inject via system events instead of calling the agent directly?
 To maintain a unified entry point for the agent. The agent doesn't need to know whether a prompt came from a heartbeat or cron — it just sees a message and processes it normally. This makes the scheduling system completely transparent to the agent.
@@ -428,4 +428,4 @@ To maintain a unified entry point for the agent. The agent doesn't need to know 
 To prevent loss. The `enqueue()` → `deliver()` → `ack()` three-step operation ensures no message is lost if any step fails. Worst case: delivery succeeds but the process crashes before `ack()` — on next startup it will re-send once (at-least-once semantics).
 
 ### Why use a "last interaction" strategy for delivery routing?
-Consistent with OpenClaw's design philosophy. In a single-tenant scenario, wherever the user last talked to the bot, the bot replies in that channel. Adding new connectors in the future only requires `registerConnector()` + `touchInteraction()` — no changes to scheduling logic.
+Delivery routing is connector-first: in a single-tenant scenario, wherever the user last talked to the bot, the bot replies in that channel. Adding new connectors only requires `registerConnector()` + `touchInteraction()` — no changes to scheduling logic.

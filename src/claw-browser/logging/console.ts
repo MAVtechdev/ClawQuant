@@ -1,6 +1,6 @@
 import { createRequire } from "node:module";
 import util from "node:util";
-import type { OpenClawConfig } from "../config/types.js";
+import type { ClawBrowserRootConfig } from "../config/types.js";
 import { isVerbose } from "../globals.js";
 import { stripAnsi } from "../terminal/ansi.js";
 import { readLoggingConfig } from "./config.js";
@@ -17,11 +17,11 @@ type ConsoleSettings = {
 export type ConsoleLoggerSettings = ConsoleSettings;
 
 const requireConfig = createRequire(import.meta.url);
-type ConsoleConfigLoader = () => OpenClawConfig["logging"] | undefined;
+type ConsoleConfigLoader = () => ClawBrowserRootConfig["logging"] | undefined;
 const loadConfigFallbackDefault: ConsoleConfigLoader = () => {
   try {
     const loaded = requireConfig("../config/config.js") as {
-      loadConfig?: () => OpenClawConfig;
+      loadConfig?: () => ClawBrowserRootConfig;
     };
     return loaded.loadConfig?.().logging;
   } catch {
@@ -55,7 +55,7 @@ function normalizeConsoleStyle(style?: string): ConsoleStyle {
 }
 
 function resolveConsoleSettings(): ConsoleSettings {
-  let cfg: OpenClawConfig["logging"] | undefined =
+  let cfg: ClawBrowserRootConfig["logging"] | undefined =
     (loggingState.overrideSettings as LoggerSettings | null) ?? readLoggingConfig();
   if (!cfg) {
     if (loggingState.resolvingConsoleSettings) {

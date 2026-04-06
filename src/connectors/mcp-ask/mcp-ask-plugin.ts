@@ -2,7 +2,7 @@
  * MCP Ask Connector
  *
  * Exposes ClawQuant's conversation ability via a standalone MCP server on a
- * dedicated port. External agents (e.g. OpenClaw) call `askWithSession`
+ * dedicated port. External MCP clients call `askWithSession`
  * to talk to Claw as an agent — not to use its tools directly.
  *
  * Deliberately separated from the main MCP server (which exposes internal
